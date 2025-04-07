@@ -1,5 +1,5 @@
 <template>
-  <div class="container-inicio">
+  <div class="container-inicio gradient-custom">
     <div class="card card-inicio">
       <div class="card-body card-body-inicio">
         <h2 class="text-center">Gestión de Tareas</h2>
@@ -46,6 +46,15 @@
           </li>
         </ul>
       </div>
+      <div class="fixed-bottom m-2 justify-content-start align-items-start">
+        <button
+        type="button"
+        class="btn boton-shadow btn-info  w-25 m-2 fs-4  "
+        @click="handleLogout"
+        >
+        Salir
+      </button>
+    </div>
     </div>
   </div>
 </template>
@@ -180,4 +189,8 @@ export default {
 
 <style scoped>
 @import "../styles/home.css";
+.gradient-custom {
+  background: linear-gradient(135deg, #000000 0%, #6a0dad 100%);
+  min-height: 100vh;
+}
 </style>
