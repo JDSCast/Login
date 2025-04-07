@@ -118,6 +118,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  onSnapshot,
 } from "firebase/firestore";
 
 export default {
@@ -150,7 +151,6 @@ export default {
         q = tasksCollection;
       }
 
-      const tasksSnapshot = await getDocs(q);
       const usuariosCollection = collection(db, "usuarios");
       const usuariosSnapshot = await getDocs(usuariosCollection);
 
@@ -160,18 +160,20 @@ export default {
         usuariosMap[doc.id] = doc.data().name || "Sin nombre";
       });
 
-      // Recorremos tareas y le añadimos el nombre del creador
-      const tareasConNombre = tasksSnapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          ...data,
-          isEditing: false,
-          creador: usuariosMap[data.userId] || "Usuario desconocido",
-        };
-      });
+      // Escucha en tiempo real para las tareas
+      onSnapshot(q, (snapshot) => {
+        const tareasConNombre = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...data,
+            isEditing: false,
+            creador: usuariosMap[data.userId] || "Usuario desconocido",
+          };
+        });
 
-      tasks.value = tareasConNombre;
+        tasks.value = tareasConNombre;
+      });
     };
 
     const toggleTaskView = () => {
