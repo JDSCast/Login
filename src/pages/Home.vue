@@ -87,7 +87,7 @@
       <div class="fixed-bottom m-2 justify-content-start align-items-start">
         <button
           type="button"
-          class="btn boton-shadow btn-info w-25 m-2 fs-4"
+          class="btn boton-shadow btn-info btnsalir fs-5"
           @click="handleLogout"
         >
           Salir
@@ -327,5 +327,10 @@ export default {
   border-radius: 5px;
   padding: 10px;
   background-color: white;
+}
+.btnsalir{  
+  width: 150px;  
+  margin-left: 20px;  
+  padding: 5px;
 }
 </style>
