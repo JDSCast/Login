@@ -2,25 +2,10 @@
   <div class="container-inicio gradient-custom ">
     <div class="card card vw-100">
       <div class="card-body card-body-inicio ">
-          <div class="container">
-            <h2 class="text-center ">Gestión de Tareas</h2>
-            <p>Bienvenido, {{ userName }}</p>
-            
-            <!-- Botón para alternar entre vistas -->
-            <div class="mb-3 d-flex justify-content-between align-items-center">
-              <button 
-                class="btn" 
-                :class="showOnlyMyTasks ? 'btn-primary' : 'btn-secondary'"
-                @click="toggleTaskView"
-              >
-                {{ showOnlyMyTasks ? 'Ver Todas las Tareas' : 'Ver Mis Tareas' }}
-              </button>
-              
-              <span v-if="!showOnlyMyTasks" class="badge bg-info">
-                Vista de mis tareas
-              </span>
-            </div>
-          </div>
+        <div class="container">
+          <h2 class="text-center ">Gestión de Tareas</h2>
+          <p>Bienvenido, {{ userName }}</p>
+        </div>
 
         <div class="mb-3 container">
           <input
@@ -109,7 +94,6 @@ import {
   getFirestore,
   collection,
   query,
-  where,
   getDocs,
   addDoc,
   updateDoc,
@@ -128,7 +112,6 @@ export default {
     const userName = ref("");
     const tasks = ref([]);
     const newTask = ref("");
-    const showOnlyMyTasks = ref(false); // Cambiado a true por defecto
     const router = useRouter();
     const auth = getAuth();
     const db = getFirestore();
@@ -141,14 +124,6 @@ export default {
 
     const fetchTasks = async () => {
       const tasksCollection = collection(db, "tareas");
-      let q;
-      
-      if (showOnlyMyTasks.value && user.value) {
-        q = query(tasksCollection, where("userId", "==", user.value.uid));
-      } else {
-        q = tasksCollection;
-      }
-
       const usuariosCollection = collection(db, "usuarios");
       const usuariosSnapshot = await getDocs(usuariosCollection);
 
@@ -159,7 +134,7 @@ export default {
       });
 
       // Escucha en tiempo real para las tareas
-      onSnapshot(q, (snapshot) => {
+      onSnapshot(tasksCollection, (snapshot) => {
         const tareasConNombre = snapshot.docs.map((docSnap) => {
           const data = docSnap.data();
           return {
@@ -174,11 +149,6 @@ export default {
       });
     };
 
-    const toggleTaskView = () => {
-      showOnlyMyTasks.value = !showOnlyMyTasks.value;
-      fetchTasks();
-    };
-
     const addTask = async () => {
       if (!newTask.value.trim()) return;
 
@@ -188,22 +158,7 @@ export default {
         userId: user.value.uid,
         estado: 'sin-iniciar'
       });
-      
-      // Si estamos viendo solo nuestras tareas, agregamos la nueva tarea localmente
-      if (showOnlyMyTasks.value) {
-        tasks.value.push({ 
-          id: docRef.id, 
-          text: newTask.value, 
-          userId: user.value.uid, 
-          estado: 'sin-iniciar', 
-          isEditing: false,
-          creador: userName.value
-        });
-      } else {
-        // Si estamos viendo todas las tareas, recargamos
-        await fetchTasks();
-      }
-      
+
       newTask.value = "";
 
       Swal.fire({
@@ -215,7 +170,7 @@ export default {
     };
 
     const enableEdit = (task) => {
-      if (!showOnlyMyTasks.value && task.userId !== user.value?.uid) return;
+      if (task.userId !== user.value?.uid) return;
       task.isEditing = true;
     };
 
@@ -299,7 +254,6 @@ export default {
       userName,
       tasks,
       newTask,
-      showOnlyMyTasks,
       addTask,
       enableEdit,
       saveEdit,
@@ -308,8 +262,7 @@ export default {
       handleLogout,
       estados,
       filtrarPorEstado,
-      onDragEnd,
-      toggleTaskView
+      onDragEnd
     };
   },
 };

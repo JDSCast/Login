@@ -75,7 +75,7 @@ export default {
         text: 'Todos los campos son obligatorios.',
         confirmButtonText: 'OK'
         });
-        //toast.error("Todos los campos son obligatorios");
+
         return;
       }
       
@@ -90,7 +90,7 @@ export default {
           confirmButtonText: 'OK'
         });
 
-          //toast.error("El nombre de usuario ya está en uso.");
+
           return;
         }
 
@@ -109,7 +109,7 @@ export default {
         text: "Usuario registrado.",
         confirmButtonText: "OK",
       });
-  //toast.success("Registro exitoso. Inicia sesión.");
+
         router.push("/login");
       } catch (error) {
         handleAuthError(error.code);

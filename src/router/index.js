@@ -7,12 +7,12 @@ import Home from '../pages/Home.vue';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 
-
 const routes = [
   { path: '/', name: 'main', component: Main },
   { path: '/login', name: 'login', component: Login },
   { path: '/register', name: 'register', component: Register },
   { path: '/inicio', name: 'inicio', component: Home, meta: { requiresAuth: true } },
+  { path: '/:pathMatch(.*)*', redirect: '/login' }, //Redirigir a /login si la ruta no existe
 ];
 
 const router = createRouter({
