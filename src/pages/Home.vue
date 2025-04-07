@@ -48,18 +48,16 @@
                     <div class="d-flex justify-content-between flex-wrap">
                       <span class="w-100">{{ element.text }}</span>
                       <p class="mb-1">Creador: {{element.creador}}</p>
-                      <div>
+                      <div v-if="element.userId === user?.uid">
                         <button 
                           class="btn btn-warning btn-sm ms-2" 
                           @click="enableEdit(element)"
-                          :disabled="!showOnlyMyTasks && element.userId !== user?.uid"
                         >
                           Editar
                         </button>
                         <button 
                           class="btn btn-danger btn-sm ms-2" 
                           @click="deleteTask(element.id)"
-                          :disabled="!showOnlyMyTasks && element.userId !== user?.uid"
                         >
                           Eliminar
                         </button>
