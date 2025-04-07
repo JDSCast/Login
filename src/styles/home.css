@@ -1,7 +1,4 @@
 .container-inicio {
-    background-image: url('../images/photo-1611371805663-af65e62e9071.jpeg');    
-    background-size: cover;  /* Ajusta la imagen responsive */    
-    background-position: center;
     display: flex;
     justify-content: center;
     align-items: center;

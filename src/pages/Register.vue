@@ -1,31 +1,45 @@
 <template>
-  <div class="container-register">
-    <div class="card card-register mx-auto">
-      <div class="card-body card-body-register">
-        <h2 class="text-center">Registro</h2>
-        <form @submit.prevent="handleRegister">
-          <div class="mb-3">
-            <label class="form-label">Nombre de usuario</label>
-            <input type="text" class="form-control" v-model="name" />
+  <section class="vh-100 gradient-custom">
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+          <div class="card bg-dark text-white" style="border-radius: 1rem;">
+            <div class="card-body p-5 text-center">
+              <div class="mb-md-5 mt-md-4 pb-5">
+                <h2 class="fw-bold mb-2 text-uppercase">Registro</h2>
+                <p class="text-white-50 mb-5">¡Crea tu cuenta para comenzar!</p>
+
+                <form @submit.prevent="handleRegister">
+                  <div class="form-outline form-white mb-4">
+                    <input type="text" id="inputName" class="form-control form-control-lg" v-model="name" />
+                    <label class="form-label" for="inputName">Nombre de usuario</label>
+                  </div>
+
+                  <div class="form-outline form-white mb-4">
+                    <input type="email" id="inputEmail" class="form-control form-control-lg" v-model="email" />
+                    <label class="form-label" for="inputEmail">Correo electrónico</label>
+                  </div>
+
+                  <div class="form-outline form-white mb-4">
+                    <input type="password" id="inputPassword" class="form-control form-control-lg" v-model="password" />
+                    <label class="form-label" for="inputPassword">Contraseña</label>
+                  </div>
+
+                  <button class="btn btn-outline-light btn-lg px-5" type="submit">Registrarse</button>
+                </form>
+              </div>
+
+              <div>
+                <p class="mb-0">¿Ya tienes cuenta?
+                  <router-link to="/login" class="text-white-50 fw-bold">Inicia sesión</router-link>
+                </p>
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Correo electrónico</label>
-            <input type="email" class="form-control" v-model="email" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Contraseña</label>
-            <input type="password" class="form-control" v-model="password" />
-          </div>
-          <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Registrarse</button>
-          </div>
-        </form>
-        <p class="text-center mt-3">
-          ¿Ya tienes cuenta? <router-link to="/login">Inicia sesión</router-link>
-        </p>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
@@ -123,4 +137,8 @@ export default {
 
 <style scoped>
 @import '../styles/register.css';
+.gradient-custom {
+  background: linear-gradient(135deg, #000000 0%, #6a0dad 100%);
+  min-height: 100vh;
+}
 </style>

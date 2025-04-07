@@ -4,9 +4,9 @@
     align-items: center;
     min-height: 100vh;
     padding: 20px; /* Evita que el contenido se pegue en móviles */
-    background-image: url('../images/Fondo_signup.jpg');    
     background-size: cover;  /* Ajusta la imagen responsive */    
     background-position: center;
+
 }
 
 .card-register {
@@ -66,9 +66,6 @@
 /* Hacer el formulario más accesible en pantallas pequeñas */
 @media (max-width: 480px) {
 
-    .card-register {
-        
-    }
 
     .card-body-register {
         padding: 1.5rem;
