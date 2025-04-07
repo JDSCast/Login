@@ -19,32 +19,45 @@
           <li
             v-for="task in tasks"
             :key="task.id"
-            class="list-group-item d-flex justify-content-between align-items-center"
+            class="list-group-item"
           >
             <div v-if="!task.isEditing">
-              <span>{{ task.text }}</span>
-              <button class="btn btn-warning btn-sm ms-2" @click="enableEdit(task)">
-                Editar
-              </button>
+              <div class="d-flex justify-content-between">
+                <span>{{ task.text }}</span>
+                <div>
+                  <button class="btn btn-warning btn-sm ms-2" @click="enableEdit(task)">
+                    Editar
+                  </button>
+                  <button class="btn btn-danger btn-sm ms-2" @click="deleteTask(task.id)">
+                    Eliminar
+                  </button>
+                </div>
+              </div>
             </div>
+
             <div v-else>
-              <input
-                type="text"
-                v-model="task.text"
-                class="form-control"
-              />
-              <button class="btn btn-success btn-sm ms-2" @click="saveEdit(task)">
-                Guardar
-              </button>
-              <button class="btn btn-secondary btn-sm ms-2" @click="cancelEdit(task)">
-                Cancelar
-              </button>
+              <div class="mb-2">
+                <input
+                  type="text"
+                  v-model="task.text"
+                  class="form-control"
+                />
+              </div>
+              <div class="d-flex justify-content-end">
+                <button class="btn btn-success btn-sm ms-2" @click="saveEdit(task)">
+                  Guardar
+                </button>
+                <button class="btn btn-secondary btn-sm ms-2" @click="cancelEdit(task)">
+                  Cancelar
+                </button>
+                <button class="btn btn-danger btn-sm ms-2" @click="deleteTask(task.id)">
+                  Eliminar
+                </button>
+              </div>
             </div>
-            <button class="btn btn-danger btn-sm ms-2" @click="deleteTask(task.id)">
-              Eliminar
-            </button>
           </li>
         </ul>
+
       </div>
       <div class="fixed-bottom m-2 justify-content-start align-items-start">
         <button
@@ -62,6 +75,7 @@
 <script>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import Swal from 'sweetalert2';
 import {
   getAuth,
   onAuthStateChanged,
@@ -115,6 +129,13 @@ export default {
       });
       tasks.value.push({ id: docRef.id, text: newTask.value, userId: user.value.uid, isEditing: false });
       newTask.value = "";
+
+      Swal.fire({
+        title: '¡Bienvenido!',
+        text: 'Tarea Creada.',
+        icon: 'success',
+        confirmButtonText: 'Continuar'
+      })
     };
 
     const enableEdit = (task) => {
@@ -136,6 +157,12 @@ export default {
       const taskDoc = doc(db, "tareas", taskId);
       await deleteDoc(taskDoc);
       tasks.value = tasks.value.filter((task) => task.id !== taskId);
+      Swal.fire({
+        title: '¡Tarea Eliminada!',
+        text: 'Tu tarea fue eliminada.',
+        icon: 'error',
+        confirmButtonText: 'Continuar'
+      })
     };
 
     onMounted(() => {
