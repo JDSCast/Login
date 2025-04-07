@@ -61,11 +61,14 @@ import {
 import {
   getFirestore,
   collection,
-  addDoc,
+  query,
+  where,
   getDocs,
+  addDoc,
   updateDoc,
   deleteDoc,
   doc,
+  getDoc, // Asegúrate de importar getDoc
 } from "firebase/firestore";
 
 export default {
@@ -81,15 +84,16 @@ export default {
     const fetchTasks = async () => {
       if (!user.value) return;
 
+      // Consulta las tareas relacionadas con el usuario actual
       const tasksCollection = collection(db, "tareas");
-      const tasksSnapshot = await getDocs(tasksCollection);
-      tasks.value = tasksSnapshot.docs
-        .filter((doc) => doc.data().userId === user.value.uid)
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          isEditing: false,
-        }));
+      const q = query(tasksCollection, where("userId", "==", user.value.uid));
+      const tasksSnapshot = await getDocs(q);
+
+      tasks.value = tasksSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        isEditing: false,
+      }));
     };
 
     const addTask = async () => {
@@ -127,11 +131,12 @@ export default {
 
     onMounted(() => {
       const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+        // console.log("Usuario autenticado:", currentUser);
         if (currentUser) {
           user.value = currentUser;
 
           const userDoc = doc(db, "usuarios", currentUser.uid);
-          const userSnapshot = await getDocs(userDoc);
+          const userSnapshot = await getDoc(userDoc); // Cambiado a getDoc
           if (userSnapshot.exists()) {
             userName.value = userSnapshot.data().name;
           } else {
