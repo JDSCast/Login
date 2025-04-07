@@ -5,6 +5,21 @@
           <div class="container">
             <h2 class="text-center ">Gestión de Tareas</h2>
             <p>Bienvenido, {{ userName }}</p>
+            
+            <!-- Botón para alternar entre vistas -->
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+              <button 
+                class="btn" 
+                :class="showOnlyMyTasks ? 'btn-primary' : 'btn-secondary'"
+                @click="toggleTaskView"
+              >
+                {{ showOnlyMyTasks ? 'Ver Todas las Tareas' : 'Ver Mis Tareas' }}
+              </button>
+              
+              <span v-if="!showOnlyMyTasks" class="badge bg-info">
+                Vista de mis tareas
+              </span>
+            </div>
           </div>
 
         <div class="mb-3 container">
@@ -30,12 +45,24 @@
               <template #item="{ element }">
                 <li class="list-group-item mt-3 border">
                   <div v-if="!element.isEditing">
-                    <div class="d-flex justify-content-between">
-                      <span>{{ element.text }}</span>
-                      <p>Creador: {{element.creador}}</p>
+                    <div class="d-flex justify-content-between flex-wrap">
+                      <span class="w-100">{{ element.text }}</span>
+                      <p class="mb-1">Creador: {{element.creador}}</p>
                       <div>
-                        <button class="btn btn-warning btn-sm ms-2" @click="enableEdit(element)">Editar</button>
-                        <button class="btn btn-danger btn-sm ms-2" @click="deleteTask(element.id)">Eliminar</button>
+                        <button 
+                          class="btn btn-warning btn-sm ms-2" 
+                          @click="enableEdit(element)"
+                          :disabled="!showOnlyMyTasks && element.userId !== user?.uid"
+                        >
+                          Editar
+                        </button>
+                        <button 
+                          class="btn btn-danger btn-sm ms-2" 
+                          @click="deleteTask(element.id)"
+                          :disabled="!showOnlyMyTasks && element.userId !== user?.uid"
+                        >
+                          Eliminar
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -102,6 +129,7 @@ export default {
     const userName = ref("");
     const tasks = ref([]);
     const newTask = ref("");
+    const showOnlyMyTasks = ref(false); // Cambiado a true por defecto
     const router = useRouter();
     const auth = getAuth();
     const db = getFirestore();
@@ -114,8 +142,15 @@ export default {
 
     const fetchTasks = async () => {
       const tasksCollection = collection(db, "tareas");
-      const tasksSnapshot = await getDocs(tasksCollection);
+      let q;
+      
+      if (showOnlyMyTasks.value && user.value) {
+        q = query(tasksCollection, where("userId", "==", user.value.uid));
+      } else {
+        q = tasksCollection;
+      }
 
+      const tasksSnapshot = await getDocs(q);
       const usuariosCollection = collection(db, "usuarios");
       const usuariosSnapshot = await getDocs(usuariosCollection);
 
@@ -139,6 +174,11 @@ export default {
       tasks.value = tareasConNombre;
     };
 
+    const toggleTaskView = () => {
+      showOnlyMyTasks.value = !showOnlyMyTasks.value;
+      fetchTasks();
+    };
+
     const addTask = async () => {
       if (!newTask.value.trim()) return;
 
@@ -148,18 +188,34 @@ export default {
         userId: user.value.uid,
         estado: 'sin-iniciar'
       });
-      tasks.value.push({ id: docRef.id, text: newTask.value, userId: user.value.uid, estado: 'sin-iniciar', isEditing: false });
+      
+      // Si estamos viendo solo nuestras tareas, agregamos la nueva tarea localmente
+      if (showOnlyMyTasks.value) {
+        tasks.value.push({ 
+          id: docRef.id, 
+          text: newTask.value, 
+          userId: user.value.uid, 
+          estado: 'sin-iniciar', 
+          isEditing: false,
+          creador: userName.value
+        });
+      } else {
+        // Si estamos viendo todas las tareas, recargamos
+        await fetchTasks();
+      }
+      
       newTask.value = "";
 
       Swal.fire({
-        title: '¡Bienvenido!',
-        text: 'Tarea Creada.',
+        title: '¡Tarea Creada!',
+        text: 'Tu tarea ha sido creada exitosamente.',
         icon: 'success',
         confirmButtonText: 'Continuar'
-      })
+      });
     };
 
     const enableEdit = (task) => {
+      if (!showOnlyMyTasks.value && task.userId !== user.value?.uid) return;
       task.isEditing = true;
     };
 
@@ -167,6 +223,7 @@ export default {
       const taskDoc = doc(db, "tareas", task.id);
       await updateDoc(taskDoc, { text: task.text });
       task.isEditing = false;
+      await fetchTasks(); // Recargamos para asegurar consistencia
     };
 
     const cancelEdit = (task) => {
@@ -177,13 +234,14 @@ export default {
     const deleteTask = async (taskId) => {
       const taskDoc = doc(db, "tareas", taskId);
       await deleteDoc(taskDoc);
-      tasks.value = tasks.value.filter((task) => task.id !== taskId);
+      await fetchTasks(); // Recargamos después de eliminar
+      
       Swal.fire({
         title: '¡Tarea Eliminada!',
-        text: 'Tu tarea fue eliminada.',
-        icon: 'error',
+        text: 'La tarea fue eliminada correctamente.',
+        icon: 'success',
         confirmButtonText: 'Continuar'
-      })
+      });
     };
 
     const filtrarPorEstado = (estado) => {
@@ -192,7 +250,10 @@ export default {
 
     const onDragEnd = async (evt) => {
       const movedTask = evt.item.__draggable_context.element;
-      const newEstado = evt.to.parentElement.querySelector('h4').textContent.toLowerCase().replace(' ', '-');
+      const newEstado = estados.find(e => 
+        e.titulo.toLowerCase() === evt.to.parentElement.querySelector('h4').textContent.toLowerCase()
+      )?.valor;
+      
       if (movedTask && newEstado && movedTask.estado !== newEstado) {
         movedTask.estado = newEstado;
         const taskDoc = doc(db, "tareas", movedTask.id);
@@ -234,9 +295,11 @@ export default {
     };
 
     return {
+      user,
       userName,
       tasks,
       newTask,
+      showOnlyMyTasks,
       addTask,
       enableEdit,
       saveEdit,
@@ -245,7 +308,8 @@ export default {
       handleLogout,
       estados,
       filtrarPorEstado,
-      onDragEnd
+      onDragEnd,
+      toggleTaskView
     };
   },
 };
